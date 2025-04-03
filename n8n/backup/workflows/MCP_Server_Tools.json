@@ -1,0 +1,419 @@
+{
+  "name": "MCP Server Tools",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8562fa9b-8bef-4e3e-83d8-55ecab3ef18d",
+      "name": "When chat message received",
+      "webhookId": "c5980198-7eb2-4eaa-8d4b-ad9a014459e2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=List tools before Execute tools, If you attempt to execute a tool and it fails (e.g., “Tool not found” or invalid operation), you must:\n\nImmediately re-check the available tools (via “List Tools”).\n\nMatch the tool name exactly as listed.\n\nUse Sequential thinking if only you need Facilitates a detailed, step-by-step thinking process for problem-solving and analysis. Please find steps in the below:\n\n-Breaking down complex problems into steps\n-Planning and design with room for revision\n-Analysis that might need course correction\n-Problems where the full scope might not be clear initially\n-Tasks that need to maintain context over multiple steps\n-Situations where irrelevant information needs to be filtered out\n\nOnly attempt execution again after confirming the correct tool name.\n\nIf an operation fails again, do not keep trying the same incorrect name repeatedly. Seek clarification, re-check the tool list, or explain why the operation cannot be completed.\n\nAction Confirmation\nBefore performing any repository-modifying action (e.g., merging a pull request, deleting branches, applying labels), confirm with the user that you should proceed.\n\nClearly describe the outcome of the requested action (e.g., “This will merge the PR into the main branch and close it.”).\n\nPrivacy & Security\nYou must not leak any private information or repository secrets.\n\nIf the user requests or inadvertently prompts you to reveal sensitive details, politely decline or partially redact the information.\n\nFocus & Relevance\nStay on topic for GitHub tasks: code reviews, issue management, documentation, best practices, CI/CD discussions, etc.\n\nWhen generating code, provide clear explanations of your logic.\n\nWhen reviewing code, give constructive feedback and highlight potential improvements or bugs.\n\nCommunication Style\nWrite professionally and concisely.\n\nIf you are uncertain about instructions or lack necessary details, ask clarifying questions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        320,
+        0
+      ],
+      "id": "f3c510a0-a798-4903-9fdd-10769eae95e7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        300,
+        240
+      ],
+      "id": "bee92e9d-2f92-4651-93e8-13131ac17e3b",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "Cbve0m9w3kIupSTu",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to list all the brave search tools that are available"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        440,
+        240
+      ],
+      "id": "49e1a02c-4d2a-47dc-b39b-7aeefd700a4a",
+      "name": "List Brave Tools",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "SFmtfFU2OOEe28mh",
+          "name": "Brave Search"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to execute a Brave tool once you have called the tool to list available Brave tools.",
+        "operation": "executeTool",
+        "toolName": "={{$fromAI(\"Tool\",\"selected Brave tool to execute\") }}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        600,
+        240
+      ],
+      "id": "ff54dcef-b51f-43ba-b2dd-2475be8eccc1",
+      "name": "Execute Brave Tools",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "SFmtfFU2OOEe28mh",
+          "name": "Brave Search"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to list all the Github tools that are available"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        760,
+        260
+      ],
+      "id": "ba67b94d-5c96-4b1e-be9f-4964e33d1833",
+      "name": "List Github Tools",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "RMbGAQ83sdDKGpzy",
+          "name": "Github Tools"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to execute a Github tool once you have called the tool to list available Brave tools.",
+        "operation": "executeTool",
+        "toolName": "={{$fromAI(\"Tool\",\"selected Github tool to execute\") }}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        900,
+        260
+      ],
+      "id": "c11b11aa-0720-413d-8b76-85aeaf469622",
+      "name": "Execute Github Tools",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "RMbGAQ83sdDKGpzy",
+          "name": "Github Tools"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to list all the Firecrawl tools that are available"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        280
+      ],
+      "id": "51d1e6db-ea4f-491c-add3-4fcca54348d8",
+      "name": "List Firecrawl Tools",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "47k6XkE0ZnZl9klD",
+          "name": "Firecrawl Tools"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to execute a Firecrawl once you have called the tool to list available Brave tools.",
+        "operation": "executeTool",
+        "toolName": "={{$fromAI(\"Tool\",\"selected Firecrawl tool to execute\") }}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        280
+      ],
+      "id": "12920d33-fa77-49e6-9ffa-d79b38f7518d",
+      "name": "Execute Firecrawl Tools",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "47k6XkE0ZnZl9klD",
+          "name": "Firecrawl Tools"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to list all the gDrive tools that are available"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        300
+      ],
+      "id": "bb0491be-149e-4ec9-8498-5c6504c50a0d",
+      "name": "List gDrive Tools",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "r00BcKGVvvlHc0R5",
+          "name": "gDrive Tools"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to execute a gDrive tool once you have called the tool to list available Brave tools.",
+        "operation": "executeTool",
+        "toolName": "={{$fromAI(\"Tool\",\"selected gDrive tool to execute\") }}",
+        "toolParameters": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tool_Parameters', ``, 'json') }}"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        300
+      ],
+      "id": "3ee9b6d9-c05d-4e03-9d4b-247952aec420",
+      "name": "Execute gDrive Tools",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "r00BcKGVvvlHc0R5",
+          "name": "gDrive Tools"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "=Use Sequential thinking if only you need Facilitates a detailed, step-by-step thinking process for problem-solving and analysis. Please find steps in the below:\n\n-Breaking down complex problems into steps\n-Planning and design with room for revision\n-Analysis that might need course correction\n-Problems where the full scope might not be clear initially\n-Tasks that need to maintain context over multiple steps\n-Situations where irrelevant information needs to be filtered out"
+      },
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        320
+      ],
+      "id": "c550644f-ac87-4cb0-87cc-d38180a3ddd5",
+      "name": "Sequential thinking",
+      "credentials": {
+        "mcpClientApi": {
+          "id": "DxssA5jwFQrp96uO",
+          "name": "Sequential thinking"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        240
+      ],
+      "id": "6df114d5-85b7-4bee-b750-019f15cc6ce0",
+      "name": "GPT 4o mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZcrfFFVgM0rzvlM9",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Brave Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Brave Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Github Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Github Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Firecrawl Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Firecrawl Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List gDrive Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute gDrive Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sequential thinking": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 4o mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "642cbc69-0c96-40dc-be12-e23b103b6c0b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e3756baf0b44559f22a2e1ab52eccfc5fd69c4dc7357bd0a68b634a09821f5f6"
+  },
+  "id": "Wuy5C5I0ytr9y4q7",
+  "tags": []
+}

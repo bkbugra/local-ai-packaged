@@ -1,0 +1,154 @@
+{
+  "name": "Google Calendar",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "bugrakarsli@gmail.com",
+          "mode": "list",
+          "cachedResultName": "bugrakarsli@gmail.com"
+        },
+        "returnAll": true,
+        "options": {
+          "timeMin": "={{ $fromAI('after', 'The earliest datetime we want to look for events for') }}",
+          "timeMax": "={{ $fromAI('before', 'The latest datetime we want to look for events for') }}",
+          "singleEvents": true,
+          "query": "={{ $fromAI('query', 'The search query to look for in the calendar. Leave empty if no search query is needed') }}"
+        }
+      },
+      "id": "6aa31024-8afa-4523-b2f8-c001ef63af8f",
+      "name": "Google Calendar",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        220
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "GBdsXcJ8MIv0psNu",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "222ae733-e438-4e92-8d17-05ed62571117",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        360,
+        20
+      ],
+      "webhookId": "a889d2ae-2159-402f-b326-5f61e90f602e"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You're a helpful assistant that helps the user answer questions about their calendar.\n\nToday is {{ $now.format('cccc') }} the {{ $now.format('yyyy-MM-dd HH:mm') }}."
+        }
+      },
+      "id": "df030ae5-f8d8-4df2-8471-da5d75700704",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        560,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "01135505-dc91-406a-b8ff-7fd6183c5b3a",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        520,
+        220
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "ZcrfFFVgM0rzvlM9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "4f5d115c-45d9-44c4-a315-f3bf382a1c67",
+      "name": "Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        680,
+        220
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "201ff62a-23df-42bc-8328-928fbdb19462",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e3756baf0b44559f22a2e1ab52eccfc5fd69c4dc7357bd0a68b634a09821f5f6"
+  },
+  "id": "s2mQyl3MeA9h5bNn",
+  "tags": []
+}

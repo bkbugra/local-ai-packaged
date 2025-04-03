@@ -1,0 +1,278 @@
+{
+  "name": "Gmail AI Accounted",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b0aec2e3-6cec-41d4-bb8a-ec94b6668ed9",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A5jCitcJdRRjYNbA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "7b4f554a-ba4b-40be-b5f3-857c77b48f1c",
+      "name": "Gmail",
+      "webhookId": "89567b5d-8ebd-4632-8e35-bba2ff1663fd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A5jCitcJdRRjYNbA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=EMAIL SUBJECT: {{ $json.subject }}\n\nSENDER:{{ $json.headers.from }}\n\nBODY:{{ $json.text }}\n\n",
+        "options": {
+          "systemMessage": "Your task is to identify whether this email is a receipt/invoice, or not.\n\nif it is receipt or invoice, output the word \"YES\", otherwise output \"NO\"\n\nonly output one word!!! YES/NO.\nDO NOT OUTPUT ANY OTHER TEXT."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        440,
+        0
+      ],
+      "id": "562312b8-2540-44b7-b33d-770a5bb9a083",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        240
+      ],
+      "id": "7248f7ef-3213-43f0-b103-5c7790356e24",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZcrfFFVgM0rzvlM9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "YES",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e35cc773-c14d-43b7-80b6-34053aaefdc8"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        816,
+        0
+      ],
+      "id": "e4937d32-252c-4c7f-af58-ddb531cd3c7c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1036,
+        0
+      ],
+      "id": "cd5ff47d-0232-4ba8-85ac-d189ccdc9097",
+      "name": "Gmail1",
+      "webhookId": "89567b5d-8ebd-4632-8e35-bba2ff1663fd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "A5jCitcJdRRjYNbA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "attachment_0",
+        "name": "={{ $binary.attachment_0.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "12QgmczkMkEvkQMg_uoiuNXbh7MPKFB6x",
+          "mode": "list",
+          "cachedResultName": "INVOICE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/12QgmczkMkEvkQMg_uoiuNXbh7MPKFB6x"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1260,
+        0
+      ],
+      "id": "bcc213f7-cc2f-4003-b042-905ccfa9bc81",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "O7WIkX5aUa3oA6u3",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2425922b-3ea8-4509-8f36-fc5a77f2c25b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e3756baf0b44559f22a2e1ab52eccfc5fd69c4dc7357bd0a68b634a09821f5f6"
+  },
+  "id": "Bxxl4JO8PdkylznE",
+  "tags": []
+}

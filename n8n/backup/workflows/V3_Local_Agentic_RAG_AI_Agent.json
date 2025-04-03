@@ -976,7 +976,7 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "qwen2.5:14b-8k",
+          "value": "qwen2.5:14b",
           "mode": "list",
           "cachedResultName": "qwen2.5:14b-8k"
         },
