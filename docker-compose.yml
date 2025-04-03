@@ -20,6 +20,7 @@ x-n8n: &service-n8n
     - N8N_PERSONALIZATION_ENABLED=false
     - N8N_ENCRYPTION_KEY
     - N8N_USER_MANAGEMENT_JWT_SECRET
+    - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
 
 x-ollama: &service-ollama
   image: ollama/ollama:latest
@@ -29,6 +30,8 @@ x-ollama: &service-ollama
     - 11434:11434
   volumes:
     - ollama_storage:/root/.ollama
+  networks:
+    - default
 
 x-init-ollama: &init-ollama
   image: ollama/ollama:latest
@@ -39,6 +42,8 @@ x-init-ollama: &init-ollama
   command:
     - "-c"
     - "sleep 3; OLLAMA_HOST=ollama:11434 ollama pull qwen2.5:7b-instruct-q4_K_M; OLLAMA_HOST=ollama:11434 ollama pull nomic-embed-text"
+  networks:
+    - default
     # For a larger context length verison of the model, run these commands:
     # echo "FROM qwen2.5:7b-instruct-q4_K_M\n\nPARAMETER num_ctx 8096" > Modelfile
     # ollama create qwen2.5:7b-8k -f ./Modelfile
@@ -69,6 +74,8 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - open-webui:/app/backend/data
+    environment:
+      - OLLAMA_API_BASE_URL=http://ollama:11434
 
   n8n-import:
     <<: *service-n8n

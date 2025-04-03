@@ -46,16 +46,45 @@ def prepare_supabase_env():
     print("Copying .env in root to .env in supabase/docker...")
     shutil.copyfile(env_example_path, env_path)
 
+def clean_docker_resources():
+    """Clean Docker resources to prevent network and container issues."""
+    print("Cleaning Docker resources to prevent startup issues...")
+    
+    # Stop any existing ollama containers
+    try:
+        subprocess.run(["docker", "stop", "ollama", "ollama-pull-llama"], stderr=subprocess.PIPE)
+    except Exception as e:
+        print(f"Note: Could not stop Ollama containers: {e}")
+    
+    # Remove any existing ollama containers
+    try:
+        subprocess.run(["docker", "rm", "ollama", "ollama-pull-llama"], stderr=subprocess.PIPE)
+    except Exception as e:
+        print(f"Note: Could not remove Ollama containers: {e}")
+    
+    # Prune Docker networks to remove any dangling networks
+    try:
+        print("Pruning Docker networks...")
+        subprocess.run(["docker", "network", "prune", "-f"], stderr=subprocess.PIPE)
+    except Exception as e:
+        print(f"Warning: Could not prune Docker networks: {e}")
+
 def stop_existing_containers():
     """Stop and remove existing containers for our unified project ('localai')."""
     print("Stopping and removing existing containers for the unified project 'localai'...")
-    run_command([
-        "docker", "compose",
-        "-p", "localai",
-        "-f", "docker-compose.yml",
-        "-f", "supabase/docker/docker-compose.yml",
-        "down"
-    ])
+    try:
+        run_command([
+            "docker", "compose",
+            "-p", "localai",
+            "-f", "docker-compose.yml",
+            "-f", "supabase/docker/docker-compose.yml",
+            "down",
+            "--remove-orphans"
+        ])
+    except Exception as e:
+        print(f"Warning: Error stopping containers: {e}")
+        print("Attempting cleanup...")
+        clean_docker_resources()
 
 def start_supabase():
     """Start the Supabase services (using its compose file)."""
@@ -71,7 +100,25 @@ def start_local_ai(profile=None):
     if profile and profile != "none":
         cmd.extend(["--profile", profile])
     cmd.extend(["-f", "docker-compose.yml", "up", "-d"])
-    run_command(cmd)
+    
+    try:
+        run_command(cmd)
+    except Exception as e:
+        print(f"Error starting local AI services: {e}")
+        print("Attempting to manually start Ollama...")
+        
+        try:
+            # Try to manually start Ollama container as a fallback
+            subprocess.run(["docker", "run", "--name", "ollama", "-d", "-p", "11434:11434", 
+                           "-v", "ollama_storage:/root/.ollama", "ollama/ollama:latest"], check=True)
+            
+            # Connect to the localai network
+            subprocess.run(["docker", "network", "connect", "localai_default", "ollama"], check=True)
+            
+            print("Successfully started Ollama manually. Other services may need to be restarted.")
+        except Exception as fallback_error:
+            print(f"Failed to manually start Ollama: {fallback_error}")
+            print("Please try restarting Docker and running the script again.")
 
 def generate_searxng_secret_key():
     """Generate a secret key for SearXNG based on the current platform."""
@@ -221,6 +268,9 @@ def main():
 
     clone_supabase_repo()
     prepare_supabase_env()
+    
+    # Clean Docker resources first to avoid network issues
+    clean_docker_resources()
     
     # Generate SearXNG secret key and check docker-compose.yml
     generate_searxng_secret_key()
